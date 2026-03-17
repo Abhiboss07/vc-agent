@@ -23,6 +23,25 @@ def main():
     print(f"\nCalling {phone}...")
     print(f"Room: {room}\n")
 
+    # Explicitly dispatch the agent into the room first
+    print("Dispatching agent to room...")
+    dispatch_result = subprocess.run(
+        [
+            "lk", "dispatch", "create",
+            "--room", room,
+            "--agent-name", "my-agent",
+            "--url", LIVEKIT_URL,
+            "--api-key", API_KEY,
+            "--api-secret", API_SECRET,
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if dispatch_result.returncode != 0:
+        print(f"Warning: dispatch failed: {dispatch_result.stderr}")
+    else:
+        print("Agent dispatched successfully!")
+
     result = subprocess.run(
         [
             "lk", "sip", "participant", "create",

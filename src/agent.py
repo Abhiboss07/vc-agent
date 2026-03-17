@@ -66,6 +66,8 @@ async def my_agent(ctx: JobContext):
         ),
     )
 
+    await ctx.connect()
+
     await session.start(
         agent=Assistant(),
         room=ctx.room,
@@ -81,7 +83,9 @@ async def my_agent(ctx: JobContext):
         ),
     )
 
-    await ctx.connect()
+    await session.generate_reply(
+        instructions="Caller ko turant greet karo. Apna introduction do ki aap ek real estate calling agent hain aur unki kya madad kar sakte hain."
+    )
 
 
 if __name__ == "__main__":
