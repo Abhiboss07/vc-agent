@@ -1,11 +1,15 @@
+import os
 import subprocess
 import sys
 
+from dotenv import load_dotenv
 
-TRUNK_ID = "REDACTED_TRUNK_ID"
-LIVEKIT_URL = "wss://ai-calling-agent-y3p1e3sx.livekit.cloud"
-API_KEY = "REDACTED_API_KEY"
-API_SECRET = "REDACTED_SECRET"
+load_dotenv(".env.local")
+
+TRUNK_ID = os.environ["OUTBOUND_TRUNK_ID"]
+LIVEKIT_URL = os.environ["LIVEKIT_URL"]
+API_KEY = os.environ["LIVEKIT_API_KEY"]
+API_SECRET = os.environ["LIVEKIT_API_SECRET"]
 
 
 def main():
