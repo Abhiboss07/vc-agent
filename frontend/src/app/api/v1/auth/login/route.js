@@ -11,14 +11,23 @@ export async function POST(request) {
     }
 
     const users = await getCollection('users');
-    const user = await users.findOne({ email: email.toLowerCase() });
-
+    // Support login by email or phone number
+    const identifier = email.toLowerCase();
+    let user = await users.findOne({ email: identifier });
     if (!user) {
-      return NextResponse.json({ ok: false, error: 'Invalid email or password' }, { status: 401 });
+      user = await users.findOne({ phone: email.trim() });
     }
 
+    if (!user) {
+      return NextResponse.json({ ok: false, error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    // Phone-only users have no password — direct them to OTP login
     if (!user.password) {
-      return NextResponse.json({ ok: false, error: 'Invalid email or password' }, { status: 401 });
+      return NextResponse.json(
+        { ok: false, error: 'This account uses phone OTP login. Please use the OTP option.' },
+        { status: 401 }
+      );
     }
 
     const passwordMatch = await comparePassword(password, user.password);
