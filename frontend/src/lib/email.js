@@ -1,12 +1,17 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+function getTransporter() {
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    throw new Error('GMAIL_USER and GMAIL_APP_PASSWORD env vars are not set');
+  }
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+}
 
 /**
  * Send an OTP verification email.
@@ -16,6 +21,7 @@ const transporter = nodemailer.createTransport({
  * @param {string} name  - Recipient name
  */
 export async function sendOtpEmail(to, otp, name = 'User') {
+  const transporter = getTransporter();
   await transporter.sendMail({
     from: `"VoiceAI Platform" <${process.env.GMAIL_USER}>`,
     to,
