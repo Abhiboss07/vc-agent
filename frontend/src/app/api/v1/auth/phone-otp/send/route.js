@@ -25,9 +25,10 @@ export async function POST(request) {
 
     if (!user) {
       // Auto-create a user record for phone-based login
+      // email is intentionally omitted (not null) so the sparse unique index on email
+      // allows multiple phone-only users without collision
       await users.insertOne({
         name: phone,
-        email: null,
         phone,
         password: null,
         isVerified: false,
