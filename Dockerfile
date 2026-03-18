@@ -44,10 +44,8 @@ RUN uv sync --locked
 # (Excludes files specified in .dockerignore)
 COPY . .
 
-# Pre-download any ML models or files the agent needs
-# This ensures the container is ready to run immediately without downloading
-# dependencies at runtime, which improves startup time and reliability
-RUN uv run "src/agent.py" download-files
+# Note: download-files is not needed since we use Gemini Live (native audio realtime)
+# which handles VAD/turn detection internally — no Silero VAD or turn detector models required.
 
 # --- Production stage ---
 # Build tools (gcc, g++, python3-dev) are not included in the final image
