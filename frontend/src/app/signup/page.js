@@ -7,13 +7,10 @@ import { API_BASE } from '../../lib/api';
 
 export default function SignupPage() {
     const router = useRouter();
-    const [tab, setTab] = useState('email'); // 'email' | 'phone'
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
     const [password, setPassword] = useState('');
-
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -23,17 +20,10 @@ export default function SignupPage() {
         setLoading(true);
 
         try {
-            const url = `${API_BASE}/v1/auth/signup`;
-
-            const payload =
-                tab === 'email'
-                    ? { name, email, password }
-                    : { name, phone, password };
-
-            const res = await fetch(url, {
+            const res = await fetch(`${API_BASE}/v1/auth/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({ name, email, password })
             });
 
             const data = await res.json();
@@ -43,19 +33,12 @@ export default function SignupPage() {
                 return;
             }
 
-            if (tab === 'email') {
-                const verifyUrl =
-                    `/verify?email=${encodeURIComponent(email)}` +
-                    (data.devOtp ? `&devOtp=${encodeURIComponent(data.devOtp)}` : '');
-                router.push(verifyUrl);
-            } else {
-                const verifyUrl =
-                    `/verify-phone?phone=${encodeURIComponent(phone)}` +
-                    (data.devOtp ? `&devOtp=${encodeURIComponent(data.devOtp)}` : '');
-                router.push(verifyUrl);
-            }
+            const verifyUrl =
+                `/verify?email=${encodeURIComponent(email)}` +
+                (data.devOtp ? `&devOtp=${encodeURIComponent(data.devOtp)}` : '');
+            router.push(verifyUrl);
         } catch {
-            setError('Network error. Please make sure the backend is running.');
+            setError('Network error. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -93,61 +76,6 @@ export default function SignupPage() {
                 <h1 className="auth-title">Create Account</h1>
                 <p className="auth-subtitle">Get started with VoiceAI Platform</p>
 
-                <div
-                    style={{
-                        display: 'flex',
-                        gap: 6,
-                        marginBottom: 20,
-                        background: 'rgba(255,255,255,0.05)',
-                        borderRadius: 10,
-                        padding: 4
-                    }}
-                >
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setTab('email');
-                            setError('');
-                        }}
-                        style={{
-                            flex: 1,
-                            padding: '8px 0',
-                            borderRadius: 7,
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            background: tab === 'email' ? '#2b6cee' : 'transparent',
-                            color: tab === 'email' ? '#fff' : '#6b7280',
-                            transition: 'all 0.15s'
-                        }}
-                    >
-                        Email
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => {
-                            setTab('phone');
-                            setError('');
-                        }}
-                        style={{
-                            flex: 1,
-                            padding: '8px 0',
-                            borderRadius: 7,
-                            border: 'none',
-                            cursor: 'pointer',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            background: tab === 'phone' ? '#2b6cee' : 'transparent',
-                            color: tab === 'phone' ? '#fff' : '#6b7280',
-                            transition: 'all 0.15s'
-                        }}
-                    >
-                        Phone Number
-                    </button>
-                </div>
-
                 {error && <div className="auth-error">{error}</div>}
 
                 <form className="auth-form" onSubmit={handleSubmit}>
@@ -162,29 +90,16 @@ export default function SignupPage() {
                         />
                     </div>
 
-                    {tab === 'email' ? (
-                        <div className="form-group">
-                            <label>Email</label>
-                            <input
-                                type="email"
-                                placeholder="you@company.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                        </div>
-                    ) : (
-                        <div className="form-group">
-                            <label>Phone Number</label>
-                            <input
-                                type="tel"
-                                placeholder="+91 98765 43210"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                                required
-                            />
-                        </div>
-                    )}
+                    <div className="form-group">
+                        <label>Email</label>
+                        <input
+                            type="email"
+                            placeholder="you@company.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
 
                     <div className="form-group">
                         <label>Password</label>

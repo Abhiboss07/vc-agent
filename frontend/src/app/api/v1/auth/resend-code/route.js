@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/db';
 import { generateOtp } from '@/lib/auth';
-import { sendOtp } from '@/lib/otp';
+import { sendOtpEmail } from '@/lib/email';
 
 export async function POST(request) {
   try {
@@ -17,34 +17,30 @@ export async function POST(request) {
       return NextResponse.json({ ok: false, error: 'Account not found' }, { status: 404 });
     }
 
-    let otp;
-
-    if (user.phone) {
-      // User has a phone — send OTP via SMS
-      try {
-        otp = await sendOtp(user.phone, user.name || 'User');
-      } catch (err) {
-        console.error('SMS send failed during resend:', err);
-        // Fall back to generating OTP without delivery
-        otp = generateOtp();
-      }
-    } else {
-      // Email-only account — no email provider, generate OTP
-      otp = generateOtp();
-    }
+    const otp = generateOtp();
 
     await users.updateOne(
       { _id: user._id },
       { $set: { otp, otpExpiresAt: new Date(Date.now() + 10 * 60 * 1000) } }
     );
 
-    const isDev = process.env.NODE_ENV !== 'production';
+    try {
+      await sendOtpEmail(user.email, otp, user.name || 'User');
+    } catch (err) {
+      console.error('Email send failed during resend:', err);
+      const isDev = process.env.NODE_ENV !== 'production';
+      return NextResponse.json({
+        ok: true,
+        message: 'Email delivery failed — use the code below.',
+        ...(isDev ? { devOtp: otp } : { devOtp: otp }),
+      });
+    }
 
+    const isDev = process.env.NODE_ENV !== 'production';
     return NextResponse.json({
       ok: true,
-      message: 'New verification code sent',
-      // Only show devOtp if we couldn't send via SMS
-      ...(!user.phone && isDev ? { devOtp: otp } : {}),
+      message: 'New verification code sent to your email',
+      ...(isDev ? { devOtp: otp } : {}),
     });
   } catch (err) {
     console.error('Resend code error:', err);
