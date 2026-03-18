@@ -22,31 +22,28 @@ export async function POST(request) {
     }
 
     const now = new Date();
+    const otpExpiry = new Date(now.getTime() + 10 * 60 * 1000);
 
-    if (!user) {
-      // Auto-create a user record for phone-based login
-      // email is intentionally omitted (not null) so the sparse unique index on email
-      // allows multiple phone-only users without collision
-      await users.insertOne({
-        name: phone,
-        phone,
-        password: null,
-        isVerified: false,
-        otp,
-        otpExpiresAt: new Date(now.getTime() + 10 * 60 * 1000),
-        provider: 'phone',
-        role: 'admin',
-        plan: 'free',
-        createdAt: now,
-        updatedAt: now,
-        __v: 0,
-      });
-    } else {
-      await users.updateOne(
-        { _id: user._id },
-        { $set: { otp, otpExpiresAt: new Date(now.getTime() + 10 * 60 * 1000) } }
-      );
-    }
+    // Upsert on phone so we never insert a duplicate, and never set email at
+    // all — the sparse unique index on email skips documents without the field.
+    await users.findOneAndUpdate(
+      { phone },
+      {
+        $set: { otp, otpExpiresAt: otpExpiry, updatedAt: now },
+        $setOnInsert: {
+          name: phone,
+          phone,
+          password: null,
+          isVerified: false,
+          provider: 'phone',
+          role: 'admin',
+          plan: 'free',
+          createdAt: now,
+          __v: 0,
+        },
+      },
+      { upsert: true }
+    );
 
     return NextResponse.json({
       ok: true,
