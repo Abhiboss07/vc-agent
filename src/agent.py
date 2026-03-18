@@ -51,7 +51,7 @@ class Assistant(Agent):
 server = AgentServer()
 
 
-@server.rtc_session(agent_name="Aman")
+@server.rtc_session()
 async def aman(ctx: JobContext):
     ctx.log_context_fields = {
         "room": ctx.room.name,
