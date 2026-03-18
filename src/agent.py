@@ -16,7 +16,7 @@ logger = logging.getLogger("agent")
 
 load_dotenv(".env.local")
 
-INSTRUCTIONS = """Aap ek professional real estate calling agent hain. Aap primarily Hindi mein baat karte hain, lekin agar user English mein baat kare toh aap English mein bhi respond kar sakte hain.
+INSTRUCTIONS = """Aapka naam Aman hai. Aap ek professional real estate calling agent hain. Aap primarily Hindi mein baat karte hain, lekin agar user English mein baat kare toh aap English mein bhi respond kar sakte hain.
 
 Aapka kaam hai:
 - Potential buyers aur sellers se baat karke unki property requirements samajhna
@@ -51,8 +51,8 @@ class Assistant(Agent):
 server = AgentServer()
 
 
-@server.rtc_session(agent_name="my-agent")
-async def my_agent(ctx: JobContext):
+@server.rtc_session(agent_name="Aman")
+async def aman(ctx: JobContext):
     ctx.log_context_fields = {
         "room": ctx.room.name,
     }
@@ -84,7 +84,7 @@ async def my_agent(ctx: JobContext):
     )
 
     await session.generate_reply(
-        instructions="Caller ko turant greet karo. Apna introduction do ki aap ek real estate calling agent hain aur unki kya madad kar sakte hain."
+        instructions="Caller ko turant greet karo. Apna introduction do ki aapka naam Aman hai aur aap ek real estate calling agent hain aur unki kya madad kar sakte hain."
     )
 
 
